@@ -14,23 +14,32 @@ type TripB struct {
 func TestMultiTimeSeriesTable(t *testing.T) {
 	tbl, _ := ns.MultiTimeSeriesTable("tripTime6", "Tag", "Time", "Id", time.Minute, TripB{})
 	createIf(tbl.(TableChanger), t)
-	err := tbl.WithOptions(Options{TTL: 30 * time.Second}).Set(TripB{
-		Id:   "1",
-		Time: parse("2006 Jan 2 15:03:59"),
-		Tag:  "A",
-	}).Add(tbl.Set(TripB{
+
+	op1, err := tbl.Set(TripB{
 		Id:   "2",
 		Time: parse("2006 Jan 2 15:04:00"),
 		Tag:  "B",
-	})).Add(tbl.Set(TripB{
+	})
+
+	op2, err := tbl.Set(TripB{
 		Id:   "3",
 		Time: parse("2006 Jan 2 15:04:01"),
 		Tag:  "A",
-	})).Add(tbl.Set(TripB{
+	})
+
+	op3, err := tbl.Set(TripB{
 		Id:   "4",
 		Time: parse("2006 Jan 2 15:05:01"),
 		Tag:  "B",
-	})).Run()
+	})
+
+	op, err := tbl.WithOptions(Options{TTL: 30 * time.Second}).Set(TripB{
+		Id:   "1",
+		Time: parse("2006 Jan 2 15:03:59"),
+		Tag:  "A",
+	})
+
+	op.Add(op1).Add(op2).Add(op3).Run()
 	if err != nil {
 		t.Fatal(err)
 	}

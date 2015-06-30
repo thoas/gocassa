@@ -3,7 +3,6 @@ package gocassa
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"reflect"
 
@@ -210,11 +209,12 @@ func (t *MockTable) getOrCreateColumnGroup(rowKey, superColumnKey *keyPart) map[
 	return scol.Columns
 }
 
-func (t *MockTable) SetWithOptions(i interface{}, options Options) Op {
+func (t *MockTable) SetWithOptions(i interface{}, options Options) (Op, error) {
 	return newOp(func(m mockOp) error {
-		columns, ok := toMap(i)
-		if !ok {
-			return errors.New("Can't create: value not understood")
+		columns, err := toMap(i)
+
+		if err != nil {
+			return err
 		}
 
 		rowKey, err := t.keyFromColumnValues(columns, t.keys.PartitionKeys)
@@ -233,10 +233,10 @@ func (t *MockTable) SetWithOptions(i interface{}, options Options) Op {
 			superColumn[k] = v
 		}
 		return nil
-	})
+	}), nil
 }
 
-func (t *MockTable) Set(i interface{}) Op {
+func (t *MockTable) Set(i interface{}) (Op, error) {
 	return t.SetWithOptions(i, t.options)
 }
 

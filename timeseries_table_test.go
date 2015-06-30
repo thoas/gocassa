@@ -22,19 +22,27 @@ func parse(value string) time.Time {
 func TestTimeSeriesT(t *testing.T) {
 	tbl, _ := ns.TimeSeriesTable("tripTime5", "Time", "Id", time.Minute, Trip{})
 	createIf(tbl.(TableChanger), t)
-	err := tbl.Set(Trip{
+	op, err := tbl.Set(Trip{
 		Id:   "1",
 		Time: parse("2006 Jan 2 15:03:59"),
-	}).Add(tbl.Set(Trip{
+	})
+
+	op1, err := tbl.Set(Trip{
 		Id:   "2",
 		Time: parse("2006 Jan 2 15:04:00"),
-	})).Add(tbl.Set(Trip{
+	})
+
+	op2, err := tbl.Set(Trip{
 		Id:   "3",
 		Time: parse("2006 Jan 2 15:04:01"),
-	})).Add(tbl.Set(Trip{
+	})
+
+	op3, err := tbl.Set(Trip{
 		Id:   "4",
 		Time: parse("2006 Jan 2 15:05:01"),
-	})).Run()
+	})
+
+	op.Add(op1).Add(op2).Add(op3).Run()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -67,7 +75,14 @@ func TestOptions(t *testing.T) {
 			Id:   fmt.Sprintf("%v", i),
 			Time: time.Now(),
 		}
-		if err := tbl.Set(i).Run(); err != nil {
+
+		op, err := tbl.Set(i)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if err := op.Run(); err != nil {
 			t.Fatal(err)
 		}
 	}

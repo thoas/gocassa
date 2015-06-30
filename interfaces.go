@@ -36,7 +36,7 @@ type KeySpace interface {
 
 // MapTable gives you basic CRUD functionality. If you need fancier ways to query your data set have a look at the other tables.
 type MapTable interface {
-	Set(v interface{}) Op
+	Set(v interface{}) (Op, error)
 	Update(id interface{}, m map[string]interface{}) Op
 	Delete(id interface{}) Op
 	Read(id, pointer interface{}) Op
@@ -51,7 +51,7 @@ type MapTable interface {
 
 // MultimapTable lets you list rows based on a field equality, eg. 'list all sales where seller id = v'.
 type MultimapTable interface {
-	Set(v interface{}) Op
+	Set(v interface{}) (Op, error)
 	Update(v, id interface{}, m map[string]interface{}) Op
 	Delete(v, id interface{}) Op
 	DeleteAll(v interface{}) Op
@@ -69,7 +69,7 @@ type MultimapTable interface {
 // TimeSeriesTable lets you list rows which have a field value between two date ranges.
 type TimeSeriesTable interface {
 	// timeField and idField must be present
-	Set(v interface{}) Op
+	Set(v interface{}) (Op, error)
 	Update(timeStamp time.Time, id interface{}, m map[string]interface{}) Op
 	Delete(timeStamp time.Time, id interface{}) Op
 	Read(timeStamp time.Time, id, pointer interface{}) Op
@@ -85,7 +85,7 @@ type TimeSeriesTable interface {
 // MultiTimeSeriesTable is a cross between TimeSeries and Multimap tables.
 type MultiTimeSeriesTable interface {
 	// timeField and idField must be present
-	Set(v interface{}) Op
+	Set(v interface{}) (Op, error)
 	Update(v interface{}, timeStamp time.Time, id interface{}, m map[string]interface{}) Op
 	Delete(v interface{}, timeStamp time.Time, id interface{}) Op
 	Read(v interface{}, timeStamp time.Time, id, pointer interface{}) Op
@@ -161,7 +161,7 @@ type TableChanger interface {
 type Table interface {
 	// Set Inserts, or Replaces your row with the supplied struct. Be aware that what is not in your struct
 	// will be deleted. To only overwrite some of the fields, use Query.Update.
-	Set(v interface{}) Op
+	Set(v interface{}) (Op, error)
 	// Where accepts a bunch of realtions and returns a filter. See the documentation for Relation and Filter to understand what that means.
 	Where(relations ...Relation) Filter // Because we provide selections
 	// Name returns the underlying table name, as stored in C*

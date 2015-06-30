@@ -364,8 +364,17 @@ func (s *MockSuite) insertPoints() []point {
 	}
 
 	for _, p := range points {
-		s.NoError(s.tsTbl.Set(p).Run())
-		s.NoError(s.mtsTbl.Set(p).Run())
+		op, err := s.tsTbl.Set(p)
+
+		s.NoError(err)
+
+		s.NoError(op.Run())
+
+		op, err = s.mtsTbl.Set(p)
+
+		s.NoError(err)
+
+		s.NoError(op.Run())
 	}
 
 	return points
@@ -409,9 +418,23 @@ func (s *MockSuite) insertUsers() (user, user, user, user) {
 	}
 
 	for _, u := range []user{u1, u2, u3, u4, u5} {
-		s.NoError(s.tbl.Set(u).Run())
-		s.NoError(s.mapTbl.Set(u).Run())
-		s.NoError(s.mmapTbl.Set(u).Run())
+		op, err := s.tbl.Set(u)
+
+		s.NoError(err)
+
+		s.NoError(op.Run())
+
+		op, err = s.mapTbl.Set(u)
+
+		s.NoError(err)
+
+		s.NoError(op.Run())
+
+		op, err = s.mmapTbl.Set(u)
+
+		s.NoError(err)
+
+		s.NoError(op.Run())
 	}
 
 	return u1, u2, u3, u4

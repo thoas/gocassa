@@ -34,10 +34,18 @@ func TestCreateTable(t *testing.T) {
 		PartitionKeys: []string{"Id", "Name"},
 	})
 	createIf(cs, t)
-	err := cs.Set(Customer{
+
+	op, err := cs.Set(Customer{
 		Id:   "1001",
 		Name: "Joe",
-	}).Run()
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = op.Run()
+
 	if err != nil {
 		t.Fatal(err)
 	}

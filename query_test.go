@@ -49,10 +49,17 @@ func init() {
 func TestEq(t *testing.T) {
 	cs, _ := ns.Table("customer", Customer{}, Keys{PartitionKeys: []string{"Id"}})
 	createIf(cs.(TableChanger), t)
-	err := cs.Set(Customer{
+	op, err := cs.Set(Customer{
 		Id:   "50",
 		Name: "Joe",
-	}).Run()
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = op.Run()
+
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,13 +86,27 @@ func TestMultipleRowResults(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = cs.Set(Customer{
-		Id:   "12",
-		Name: "John",
-	}).Add(cs.Set(Customer{
+
+	op1, err := cs.Set(Customer{
 		Id:   "13",
 		Name: "John",
-	})).Run()
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	op, err := cs.Set(Customer{
+		Id:   "12",
+		Name: "John",
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	op.Add(op1).Run()
+
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -104,13 +125,26 @@ func TestIn(t *testing.T) {
 	cs, _ := ns.Table("customer", Customer{}, Keys{
 		PartitionKeys: []string{"Id"},
 	})
-	err := cs.Set(Customer{
-		Id:   "100",
-		Name: "Joe",
-	}).Add(cs.Set(Customer{
+
+	op1, err := cs.Set(Customer{
 		Id:   "200",
 		Name: "Jane",
-	})).Run()
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	op, err := cs.Set(Customer{
+		Id:   "100",
+		Name: "Joe",
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = op.Add(op1).Run()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -130,10 +164,13 @@ func TestIn(t *testing.T) {
 func TestAnd(t *testing.T) {
 	cs, _ := ns.Table("customer1", Customer{}, Keys{PartitionKeys: []string{"Id", "Name"}})
 	createIf(cs.(TableChanger), t)
-	err := cs.Set(Customer{
+
+	op, err := cs.Set(Customer{
 		Id:   "100",
 		Name: "Joe",
-	}).Run()
+	})
+
+	err = op.Run()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -211,11 +248,14 @@ func TestTypesMarshal(t *testing.T) {
 	c := newCustomer3()
 	tbl, _ := ns.Table("customer3", Customer3{}, Keys{PartitionKeys: []string{"Id"}})
 	createIf(tbl.(TableChanger), t)
-	if err := tbl.Set(c).Run(); err != nil {
+
+	op, err := tbl.Set(c)
+
+	if err := op.Run(); err != nil {
 		t.Fatal(err)
 	}
 	res := []Customer3{}
-	err := tbl.Where(Eq("Id", "1")).Read(&res).Run()
+	err = tbl.Where(Eq("Id", "1")).Read(&res).Run()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -231,11 +271,14 @@ func TestUpdateList(t *testing.T) {
 	tbl, _ := ns.Table("customer34", Customer3{}, Keys{PartitionKeys: []string{"Id"}})
 	createIf(tbl.(TableChanger), t)
 	c := newCustomer3()
-	if err := tbl.Set(c).Run(); err != nil {
+
+	op, err := tbl.Set(c)
+
+	if err := op.Run(); err != nil {
 		t.Fatal(err)
 	}
 	f := tbl.Where(Eq("Id", "1"))
-	err := f.Update(map[string]interface{}{
+	err = f.Update(map[string]interface{}{
 		"Strings":  ListRemove("b"),
 		"Ints":     ListRemove(2),
 		"Int32s":   ListRemove(2),
@@ -308,12 +351,15 @@ func TestCQLInjection(t *testing.T) {
 		Id:      "1",
 		Strings: []string{"a", "b", "c"},
 	}
-	if err := tbl.Set(c).Run(); err != nil {
+
+	op, err := tbl.Set(c)
+
+	if err := op.Run(); err != nil {
 		t.Fatal(err)
 	}
 	// At the moment we don't have batch so we just try to mess up the CQL query with a single quote - if
 	// it can be messed up then we are vulnerable
-	err := tbl.Where(Eq("Id", "1")).Update(map[string]interface{}{
+	err = tbl.Where(Eq("Id", "1")).Update(map[string]interface{}{
 		"Strings": ListRemove("'"),
 	}).Run()
 	if err != nil {
@@ -336,7 +382,14 @@ func TestMaps(t *testing.T) {
 			"6": "Is Even",
 		},
 	}
-	if err := tbl.Set(c).Run(); err != nil {
+
+	op, err := tbl.Set(c)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := op.Run(); err != nil {
 		t.Fatal(err)
 	}
 	if err := tbl.Update("1", map[string]interface{}{
@@ -381,7 +434,10 @@ func TestCounters(t *testing.T) {
 		Id:      "1",
 		Counter: Counter(0),
 	}
-	if err := tbl.Set(c).Run(); err != nil {
+
+	op, err := tbl.Set(c)
+
+	if err = op.Run(); err != nil {
 		t.Fatal(err)
 	}
 	if err := tbl.Update("1", map[string]interface{}{
@@ -419,7 +475,10 @@ func TestNoop(t *testing.T) {
 		Id:      "1",
 		Counter: Counter(0),
 	}
-	if err := tbl.Set(c).Run(); err != nil {
+
+	op, err := tbl.Set(c)
+
+	if err = op.Run(); err != nil {
 		t.Fatal(err)
 	}
 	c = CustomerWithCounter{

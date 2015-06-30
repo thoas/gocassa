@@ -13,7 +13,14 @@ func TestMapTable(t *testing.T) {
 		Id:   "33",
 		Name: "Joe",
 	}
-	err := tbl.Set(joe).Run()
+	op, err := tbl.Set(joe)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = op.Run()
+
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -42,7 +49,14 @@ func TestMapTableUpdate(t *testing.T) {
 		Id:   "33",
 		Name: "Joe",
 	}
-	err := tbl.Set(joe).Run()
+	op, err := tbl.Set(joe)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = op.Run()
+
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -76,7 +90,13 @@ func TestMapTableMultiRead(t *testing.T) {
 		Id:   "33",
 		Name: "Joe",
 	}
-	err := tbl.Set(joe).Run()
+	op, err := tbl.Set(joe)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = op.Run()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -84,7 +104,11 @@ func TestMapTableMultiRead(t *testing.T) {
 		Id:   "34",
 		Name: "Jane",
 	}
-	err = tbl.Set(jane).Run()
+	op, err = tbl.Set(jane)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = op.Run()
 	if err != nil {
 		t.Fatal(err)
 	}

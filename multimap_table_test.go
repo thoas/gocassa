@@ -19,7 +19,15 @@ func TestMultimapTableInsertRead(t *testing.T) {
 		Name: "Joe",
 		Tag:  "A",
 	}
-	err := tbl.Set(joe).Run()
+
+	op, err := tbl.Set(joe)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = op.Run()
+
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,7 +74,15 @@ func TestMultimapTableDelete(t *testing.T) {
 		Name: "Joe",
 		Tag:  "A",
 	}
-	err := tbl.Set(joe).Run()
+
+	op, err := tbl.Set(joe)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = op.Run()
+
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -96,7 +112,15 @@ func TestMultimapTableMultiRead(t *testing.T) {
 		Name: "Joe",
 		Tag:  "A",
 	}
-	err := tbl.Set(joe).Run()
+
+	op, err := tbl.Set(joe)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = op.Run()
+
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -105,7 +129,14 @@ func TestMultimapTableMultiRead(t *testing.T) {
 		Name: "Jane",
 		Tag:  "A",
 	}
-	err = tbl.Set(jane).Run()
+
+	op, err = tbl.Set(jane)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = op.Run()
 	if err != nil {
 		t.Fatal(err)
 	}

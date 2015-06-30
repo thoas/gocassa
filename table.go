@@ -76,21 +76,21 @@ func keyValues(m map[string]interface{}) ([]string, []interface{}) {
 	return keys, values
 }
 
-func toMap(i interface{}) (map[string]interface{}, bool) {
+func toMap(i interface{}) (map[string]interface{}, error) {
 	switch v := i.(type) {
 	//case M:
 	//	return map[string]interface{}(v), true
 	case map[string]interface{}:
-		return v, true
+		return v, nil
 	}
 
 	info, err := r.NewStructInfo(i)
 
 	if err != nil {
-		return nil, false
+		return nil, err
 	}
 
-	return info.ToMapWithoutZero(), true
+	return info.ToMapWithoutZero(), nil
 }
 
 func (t t) Where(rs ...Relation) Filter {
@@ -169,18 +169,19 @@ func insertStatement(keySpaceName, cfName string, fieldNames []string, opts Opti
 	return buf.String()
 }
 
-func (t t) Set(i interface{}) Op {
-	m, ok := toMap(i)
+func (t t) Set(i interface{}) (Op, error) {
+	m, err := toMap(i)
 
-	if !ok {
-		panic("SetWithOptions: Incompatible type")
+	if err != nil {
+		return nil, err
 	}
+
 	ks := append(t.info.keys.PartitionKeys, t.info.keys.ClusteringColumns...)
 	updFields := removeFields(m, ks)
 	if len(updFields) == 0 {
 		return newWriteOp(t.keySpace.qe, filter{
 			t: t,
-		}, insert, m)
+		}, insert, m), nil
 	}
 
 	transformFields(updFields)
@@ -189,7 +190,7 @@ func (t t) Set(i interface{}) Op {
 	return newWriteOp(t.keySpace.qe, filter{
 		t:  t,
 		rs: rels,
-	}, update, updFields)
+	}, update, updFields), nil
 }
 
 func (t t) Create() error {

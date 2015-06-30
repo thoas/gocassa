@@ -1,6 +1,7 @@
 package gocassa
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -12,16 +13,21 @@ type multiTimeSeriesT struct {
 	bucketSize time.Duration
 }
 
-func (o *multiTimeSeriesT) Set(v interface{}) Op {
-	m, ok := toMap(v)
+func (o *multiTimeSeriesT) Set(v interface{}) (Op, error) {
+	m, err := toMap(v)
+
+	if err != nil {
+		return nil, err
+	}
+
+	tim, ok := m[o.timeField].(time.Time)
+
 	if !ok {
-		panic("Can't set: not able to convert")
+		return nil, fmt.Errorf("timeField is not actually a time.Time")
 	}
-	if tim, ok := m[o.timeField].(time.Time); !ok {
-		panic("timeField is not actually a time.Time")
-	} else {
-		m[bucketFieldName] = o.bucket(tim.Unix())
-	}
+
+	m[bucketFieldName] = o.bucket(tim.Unix())
+
 	return o.Table.Set(m)
 }
 
