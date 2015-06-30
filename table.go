@@ -26,7 +26,6 @@ type tableInfo struct {
 	fieldNames     map[string]struct{} // This is here only to check containment
 	fields         []string
 	fieldValues    []interface{}
-	fieldNullables []string
 }
 
 func newTableInfo(keyspace, name string, keys Keys, entity interface{}, info *r.StructInfo) *tableInfo {
@@ -91,7 +90,7 @@ func toMap(i interface{}) (map[string]interface{}, bool) {
 		return nil, false
 	}
 
-	return info.ToMap(), true
+	return info.ToMapWithoutZero(), true
 }
 
 func (t t) Where(rs ...Relation) Filter {
@@ -172,6 +171,7 @@ func insertStatement(keySpaceName, cfName string, fieldNames []string, opts Opti
 
 func (t t) Set(i interface{}) Op {
 	m, ok := toMap(i)
+
 	if !ok {
 		panic("SetWithOptions: Incompatible type")
 	}
@@ -182,8 +182,10 @@ func (t t) Set(i interface{}) Op {
 			t: t,
 		}, insert, m)
 	}
+
 	transformFields(updFields)
 	rels := relations(t.info.keys, m)
+
 	return newWriteOp(t.keySpace.qe, filter{
 		t:  t,
 		rs: rels,

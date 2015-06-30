@@ -5,6 +5,7 @@ import (
 	"fmt"
 	r "reflect"
 	"strings"
+	"time"
 )
 
 // StructToMap converts a struct to map. The object's default key string
@@ -111,8 +112,7 @@ func NewStructInfo(val interface{}) (*StructInfo, error) {
 		}
 
 		if _, found := fieldsMap[info.Key]; found {
-			msg := fmt.Sprintf("Duplicated key '%s' in struct %s", info.Key, st.String())
-			panic(msg)
+			return nil, fmt.Errorf("Duplicated key '%s' in struct %s", info.Key, st.String())
 		}
 
 		fieldsList = append(fieldsList, info)
@@ -131,8 +131,51 @@ func (s *StructInfo) ToMap() map[string]interface{} {
 	mapVal := make(map[string]interface{}, len(s.FieldsList))
 
 	for _, field := range s.FieldsList {
-		mapVal[field.Key] = s.Value.Field(field.Num).Interface()
+		value := s.Value.Field(field.Num)
+
+		mapVal[field.Key] = value.Interface()
 	}
 
 	return mapVal
+}
+
+func (s *StructInfo) ToMapWithoutZero() map[string]interface{} {
+	mapVal := make(map[string]interface{}, len(s.FieldsList))
+
+	for _, field := range s.FieldsList {
+		value := s.Value.Field(field.Num)
+
+		mapVal[field.Key] = value.Interface()
+
+		for _, nullable := range s.NullableFields {
+			if isZero(value) {
+				delete(mapVal, nullable)
+			}
+		}
+	}
+
+	return mapVal
+}
+
+func isZero(v r.Value) bool {
+	switch v.Kind() {
+	case r.Func, r.Map, r.Slice:
+		return v.IsNil()
+	case r.Array:
+		z := true
+		for i := 0; i < v.Len(); i++ {
+			z = z && isZero(v.Index(i))
+		}
+		return z
+	case r.Struct:
+		i := v.Interface()
+
+		switch i.(type) {
+		case time.Time:
+			return i.(time.Time).IsZero()
+		}
+	}
+	z := r.Zero(v.Type())
+
+	return v.Interface() == z.Interface()
 }
