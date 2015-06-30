@@ -10,6 +10,7 @@ import (
 
 func createIf(cs TableChanger, tes *testing.T) {
 	err := cs.(TableChanger).Recreate()
+
 	if err != nil {
 		tes.Fatal(err)
 	}
@@ -29,7 +30,7 @@ func TestTables(t *testing.T) {
 func TestCreateTable(t *testing.T) {
 	rand.Seed(time.Now().Unix())
 	name := fmt.Sprintf("customer_%v", rand.Int()%100)
-	cs := ns.Table(name, Customer{}, Keys{
+	cs, _ := ns.Table(name, Customer{}, Keys{
 		PartitionKeys: []string{"Id", "Name"},
 	})
 	createIf(cs, t)
@@ -55,7 +56,7 @@ func TestCreateTable(t *testing.T) {
 }
 
 func TestCreateStatement(t *testing.T) {
-	cs := ns.Table("something", Customer{}, Keys{
+	cs, _ := ns.Table("something", Customer{}, Keys{
 		PartitionKeys: []string{"Id", "Name"},
 	})
 	str, err := cs.CreateStatement()

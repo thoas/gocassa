@@ -14,11 +14,11 @@ type Connection interface {
 
 // KeySpace is used to obtain tables from.
 type KeySpace interface {
-	MapTable(tableName, id string, row interface{}) MapTable
-	MultimapTable(tableName, fieldToIndexBy, uniqueKey string, row interface{}) MultimapTable
-	TimeSeriesTable(tableName, timeField, uniqueKey string, bucketSize time.Duration, row interface{}) TimeSeriesTable
-	MultiTimeSeriesTable(tableName, fieldToIndexByField, timeField, uniqueKey string, bucketSize time.Duration, row interface{}) MultiTimeSeriesTable
-	Table(tableName string, row interface{}, keys Keys) Table
+	MapTable(tableName, id string, row interface{}) (MapTable, error)
+	MultimapTable(tableName, fieldToIndexBy, uniqueKey string, row interface{}) (MultimapTable, error)
+	TimeSeriesTable(tableName, timeField, uniqueKey string, bucketSize time.Duration, row interface{}) (TimeSeriesTable, error)
+	MultiTimeSeriesTable(tableName, fieldToIndexByField, timeField, uniqueKey string, bucketSize time.Duration, row interface{}) (MultiTimeSeriesTable, error)
+	Table(tableName string, row interface{}, keys Keys) (Table, error)
 	// DebugMode enables/disables debug mode depending on the value of the input boolean.
 	// When DebugMode is enabled, all built CQL statements are printe to stdout.
 	DebugMode(bool)

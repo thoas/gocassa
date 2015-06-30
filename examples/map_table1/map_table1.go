@@ -22,7 +22,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	salesTable := keySpace.MapTable("sale", "Id", Sale{})
+	salesTable, err := keySpace.MapTable("sale", "Id", Sale{})
+
+	if err != nil {
+		panic(err)
+	}
 	// Create the table - we ignore error intentionally
 	salesTable.Create()
 
@@ -34,6 +38,7 @@ func main() {
 		Price:      42,
 		Created:    time.Now(),
 	}).Run()
+
 	if err != nil {
 		panic(err)
 	}

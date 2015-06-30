@@ -25,7 +25,12 @@ func main() {
 	// "SellerId" is the field we will use to query sales:
 	// MultimapTable enables us to return all the sales where SellerId equals
 	// to a certain value.
-	salesTable := keySpace.MultimapTable("sale", "SellerId", "Id", Sale{})
+	salesTable, err := keySpace.MultimapTable("sale", "SellerId", "Id", Sale{})
+
+	if err != nil {
+		panic(err)
+	}
+
 	// Create the table - we ignore error intentionally
 	salesTable.Create()
 

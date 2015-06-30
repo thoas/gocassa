@@ -41,9 +41,13 @@ func main() {
     if err != nil {
         panic(err)
     }
-    salesTable := keySpace.Table("sale", Sale{}, gocassa.Keys{
+    salesTable, err := keySpace.Table("sale", Sale{}, gocassa.Keys{
         PartitionKeys: []string{"Id"},
     })
+
+    if err != nil {
+        panic(err)
+    }
 
     err = salesTable.Set(Sale{
         Id: "sale-1",
@@ -85,7 +89,12 @@ Read, Set, Update, and Delete all happen by "Id".
 `MultimapTable` can list rows filtered by equality of a single field (eg. list sales based on their `sellerId`):
 
 ```go
-    salesTable := keySpace.MultimapTable("sale", "SellerId", "Id", Sale{})
+    salesTable, err := keySpace.MultimapTable("sale", "SellerId", "Id", Sale{})
+
+    if err != nil {
+        panic(err)
+    }
+
     // …
     results := []Sale{}
     err := salesTable.List("seller-1", nil, 0, &results).Run()
@@ -99,7 +108,12 @@ For examples on how to do pagination or Update with this table, refer to the exa
 `TimeSeriesTable` provides an interface to list rows within a time interval:
 
 ```go
-    salesTable := keySpace.TimeSeriesTable("sale", "Created", "Id", Sale{}, 24 * time.Hour)
+    salesTable, err := keySpace.TimeSeriesTable("sale", "Created", "Id", Sale{}, 24 * time.Hour)
+
+    if err != nil {
+        panic(err)
+    }
+
     //...
     results := []Sale{}
     err := salesTable.List(yesterdayTime, todayTime, &results).Run()
@@ -110,7 +124,12 @@ For examples on how to do pagination or Update with this table, refer to the exa
 `MultiTimeSeriesTable` is like a cross between `MultimapTable` and `TimeSeriesTable`. It can list rows within a time interval, and filtered by equality of a single field. The following lists sales in a time interval, by a certain seller:
 
 ```go
-    salesTable := keySpace.MultiTimeSeriesTable("sale", "SellerId", "Created", "Id", Sale{}, 24 * time.Hour)
+    salesTable, err := keySpace.MultiTimeSeriesTable("sale", "SellerId", "Created", "Id", Sale{}, 24 * time.Hour)
+
+    if err != nil {
+        panic(err)
+    }
+
     //...
     results := []Sale{}
     err := salesTable.List("seller-1", yesterdayTime, todayTime, &results).Run()

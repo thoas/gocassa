@@ -20,7 +20,7 @@ func parse(value string) time.Time {
 }
 
 func TestTimeSeriesT(t *testing.T) {
-	tbl := ns.TimeSeriesTable("tripTime5", "Time", "Id", time.Minute, Trip{})
+	tbl, _ := ns.TimeSeriesTable("tripTime5", "Time", "Id", time.Minute, Trip{})
 	createIf(tbl.(TableChanger), t)
 	err := tbl.Set(Trip{
 		Id:   "1",
@@ -60,7 +60,7 @@ func TestTimeSeriesT(t *testing.T) {
 }
 
 func TestOptions(t *testing.T) {
-	tbl := ns.TimeSeriesTable("tripTime6", "Time", "Id", time.Hour, Trip{})
+	tbl, _ := ns.TimeSeriesTable("tripTime6", "Time", "Id", time.Hour, Trip{})
 	createIf(tbl.(TableChanger), t)
 	for i := 0; i < 10; i++ {
 		i := Trip{

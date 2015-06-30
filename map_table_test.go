@@ -6,7 +6,8 @@ import (
 )
 
 func TestMapTable(t *testing.T) {
-	tbl := ns.MapTable("customer81", "Id", Customer{})
+	tbl, _ := ns.MapTable("customer81", "Id", Customer{})
+
 	createIf(tbl.(TableChanger), t)
 	joe := Customer{
 		Id:   "33",
@@ -35,7 +36,7 @@ func TestMapTable(t *testing.T) {
 }
 
 func TestMapTableUpdate(t *testing.T) {
-	tbl := ns.MapTable("customer82", "Id", Customer{})
+	tbl, _ := ns.MapTable("customer82", "Id", Customer{})
 	createIf(tbl.(TableChanger), t)
 	joe := Customer{
 		Id:   "33",
@@ -69,7 +70,7 @@ func TestMapTableUpdate(t *testing.T) {
 }
 
 func TestMapTableMultiRead(t *testing.T) {
-	tbl := ns.MapTable("customer83", "Id", Customer{})
+	tbl, _ := ns.MapTable("customer83", "Id", Customer{})
 	createIf(tbl.(TableChanger), t)
 	joe := Customer{
 		Id:   "33",

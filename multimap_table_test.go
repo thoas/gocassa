@@ -12,7 +12,7 @@ type Customer2 struct {
 }
 
 func TestMultimapTableInsertRead(t *testing.T) {
-	tbl := ns.MultimapTable("customer91", "Tag", "Id", Customer2{})
+	tbl, _ := ns.MultimapTable("customer91", "Tag", "Id", Customer2{})
 	createIf(tbl.(TableChanger), t)
 	joe := Customer2{
 		Id:   "33",
@@ -59,7 +59,7 @@ func TestMultimapTableInsertRead(t *testing.T) {
 }
 
 func TestMultimapTableDelete(t *testing.T) {
-	tbl := ns.MultimapTable("customer92", "Tag", "Id", Customer2{})
+	tbl, _ := ns.MultimapTable("customer92", "Tag", "Id", Customer2{})
 	createIf(tbl.(TableChanger), t)
 	joe := Customer2{
 		Id:   "33",
@@ -89,7 +89,7 @@ func TestMultimapTableDelete(t *testing.T) {
 }
 
 func TestMultimapTableMultiRead(t *testing.T) {
-	tbl := ns.MultimapTable("customer93", "Tag", "Id", Customer2{})
+	tbl, _ := ns.MultimapTable("customer93", "Tag", "Id", Customer2{})
 	createIf(tbl.(TableChanger), t)
 	joe := Customer2{
 		Id:   "33",

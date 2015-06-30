@@ -12,7 +12,7 @@ type TripB struct {
 }
 
 func TestMultiTimeSeriesTable(t *testing.T) {
-	tbl := ns.MultiTimeSeriesTable("tripTime6", "Tag", "Time", "Id", time.Minute, TripB{})
+	tbl, _ := ns.MultiTimeSeriesTable("tripTime6", "Tag", "Time", "Id", time.Minute, TripB{})
 	createIf(tbl.(TableChanger), t)
 	err := tbl.WithOptions(Options{TTL: 30 * time.Second}).Set(TripB{
 		Id:   "1",

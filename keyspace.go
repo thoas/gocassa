@@ -2,12 +2,13 @@ package gocassa
 
 import (
 	"fmt"
+	"github.com/hailocab/gocassa/reflect"
 	"strings"
 	"time"
 )
 
 type tableFactory interface {
-	NewTable(string, interface{}, map[string]interface{}, Keys) Table
+	NewTable(string, interface{}, Keys) (Table, error)
 }
 
 type k struct {
@@ -30,94 +31,103 @@ func (k *k) DebugMode(b bool) {
 	k.debugMode = b
 }
 
-func (k *k) Table(name string, entity interface{}, keys Keys) Table {
-	m, ok := toMap(entity)
-	if !ok {
-		panic("Unrecognized row type")
-	}
-	return k.NewTable(name, entity, m, keys)
+func (k *k) Table(name string, entity interface{}, keys Keys) (Table, error) {
+	return k.NewTable(name, entity, keys)
 }
 
-func (k *k) NewTable(name string, entity interface{}, fields map[string]interface{}, keys Keys) Table {
+func (k *k) NewTable(name string, entity interface{}, keys Keys) (Table, error) {
 	// Act both as a proxy to a tableFactory, and as the tableFactory itself (in most situations, a k will be its own
 	// tableFactory, but not always [ie. mocking])
-	if k.tableFactory != k {
-		return k.tableFactory.NewTable(name, entity, fields, keys)
-	} else {
-		ti := newTableInfo(k.name, name, keys, entity, fields)
-		return &t{
-			keySpace: k,
-			info:     ti,
-			options:  Options{},
-		}
+
+	info, err := reflect.NewStructInfo(entity)
+
+	if err != nil {
+		return nil, err
 	}
+
+	if k.tableFactory != k {
+		return k.tableFactory.NewTable(name, entity, keys)
+	}
+
+	ti := newTableInfo(k.name, name, keys, entity, info)
+	return &t{
+		keySpace: k,
+		info:     ti,
+		options:  Options{},
+	}, nil
 }
 
-func (k *k) MapTable(name, id string, row interface{}) MapTable {
-	m, ok := toMap(row)
-	if !ok {
-		panic("Unrecognized row type")
+func (k *k) MapTable(name, id string, row interface{}) (MapTable, error) {
+	table, err := k.NewTable(name, row, Keys{
+		PartitionKeys: []string{id},
+	})
+
+	if err != nil {
+		return nil, err
 	}
+
 	return &mapT{
-		Table: k.NewTable(fmt.Sprintf("%s_map_%s", name, id), row, m, Keys{
-			PartitionKeys: []string{id},
-		}),
+		Table:   table,
 		idField: id,
-	}
+	}, nil
 }
 
 func (k *k) SetKeysSpaceName(name string) {
 	k.name = name
 }
 
-func (k *k) MultimapTable(name, fieldToIndexBy, id string, row interface{}) MultimapTable {
-	m, ok := toMap(row)
-	if !ok {
-		panic("Unrecognized row type")
+func (k *k) MultimapTable(name, fieldToIndexBy, id string, row interface{}) (MultimapTable, error) {
+	table, err := k.NewTable(name, row, Keys{
+		PartitionKeys:     []string{fieldToIndexBy},
+		ClusteringColumns: []string{id},
+	})
+
+	if err != nil {
+		return nil, err
 	}
+
 	return &multimapT{
-		Table: k.NewTable(name, row, m, Keys{
-			PartitionKeys:     []string{fieldToIndexBy},
-			ClusteringColumns: []string{id},
-		}),
+		Table:          table,
 		idField:        id,
 		fieldToIndexBy: fieldToIndexBy,
-	}
+	}, nil
 }
 
-func (k *k) TimeSeriesTable(name, timeField, idField string, bucketSize time.Duration, row interface{}) TimeSeriesTable {
-	m, ok := toMap(row)
-	if !ok {
-		panic("Unrecognized row type")
+func (k *k) TimeSeriesTable(name, timeField, idField string, bucketSize time.Duration, row interface{}) (TimeSeriesTable, error) {
+	table, err := k.NewTable(name, row, Keys{
+		PartitionKeys:     []string{bucketFieldName},
+		ClusteringColumns: []string{timeField, idField},
+	})
+
+	if err != nil {
+		return nil, err
 	}
-	m[bucketFieldName] = time.Now()
+
 	return &timeSeriesT{
-		Table: k.NewTable(name, row, m, Keys{
-			PartitionKeys:     []string{bucketFieldName},
-			ClusteringColumns: []string{timeField, idField},
-		}),
+		Table:      table,
 		timeField:  timeField,
 		idField:    idField,
 		bucketSize: bucketSize,
-	}
+	}, nil
 }
 
-func (k *k) MultiTimeSeriesTable(name, indexField, timeField, idField string, bucketSize time.Duration, row interface{}) MultiTimeSeriesTable {
-	m, ok := toMap(row)
-	if !ok {
-		panic("Unrecognized row type")
+func (k *k) MultiTimeSeriesTable(name, indexField, timeField, idField string, bucketSize time.Duration, row interface{}) (MultiTimeSeriesTable, error) {
+	table, err := k.NewTable(name, row, Keys{
+		PartitionKeys:     []string{indexField, bucketFieldName},
+		ClusteringColumns: []string{timeField, idField},
+	})
+
+	if err != nil {
+		return nil, err
 	}
-	m[bucketFieldName] = time.Now()
+
 	return &multiTimeSeriesT{
-		Table: k.NewTable(name, row, m, Keys{
-			PartitionKeys:     []string{indexField, bucketFieldName},
-			ClusteringColumns: []string{timeField, idField},
-		}),
+		Table:      table,
 		indexField: indexField,
 		timeField:  timeField,
 		idField:    idField,
 		bucketSize: bucketSize,
-	}
+	}, nil
 }
 
 // Returns table names in a keyspace

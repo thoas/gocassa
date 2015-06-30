@@ -42,15 +42,15 @@ type MockSuite struct {
 func (s *MockSuite) SetupTest() {
 	s.ks = NewMockKeySpace()
 	s.Assertions = require.New(s.T())
-	s.tbl = s.ks.Table("users", user{}, Keys{
+	s.tbl, _ = s.ks.Table("users", user{}, Keys{
 		PartitionKeys:     []string{"Pk1", "Pk2"},
 		ClusteringColumns: []string{"Ck1", "Ck2"},
 	})
 
-	s.mapTbl = s.ks.MapTable("users", "Pk1", user{})
-	s.mmapTbl = s.ks.MultimapTable("users", "Pk1", "Pk2", user{})
-	s.tsTbl = s.ks.TimeSeriesTable("points", "Time", "Id", 1*time.Minute, point{})
-	s.mtsTbl = s.ks.MultiTimeSeriesTable("points", "User", "Time", "Id", 1*time.Minute, point{})
+	s.mapTbl, _ = s.ks.MapTable("users", "Pk1", user{})
+	s.mmapTbl, _ = s.ks.MultimapTable("users", "Pk1", "Pk2", user{})
+	s.tsTbl, _ = s.ks.TimeSeriesTable("points", "Time", "Id", 1*time.Minute, point{})
+	s.mtsTbl, _ = s.ks.MultiTimeSeriesTable("points", "User", "Time", "Id", 1*time.Minute, point{})
 }
 
 // Table tests
