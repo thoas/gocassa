@@ -1,8 +1,8 @@
 gocassa
 =======
 
-[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg "GoDoc")](http://godoc.org/github.com/hailocab/gocassa) 
-[![Build Status](https://img.shields.io/travis/hailocab/gocassa/master.svg "Build Status")](https://travis-ci.org/hailocab/gocassa) 
+[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg "GoDoc")](http://godoc.org/github.com/hailocab/gocassa)
+[![Build Status](https://img.shields.io/travis/hailocab/gocassa/master.svg "Build Status")](https://travis-ci.org/hailocab/gocassa)
 
 Gocassa is a high-level library on top of [gocql](https://github.com/gocql/gocql).
 
@@ -24,7 +24,7 @@ package main
 import(
     "fmt"
     "time"
-    
+
     "github.com/hailocab/gocassa"
 )
 
@@ -49,13 +49,20 @@ func main() {
         panic(err)
     }
 
-    err = salesTable.Set(Sale{
+    op, err := salesTable.Set(Sale{
         Id: "sale-1",
         CustomerId: "customer-1",
         SellerId: "seller-1",
         Price: 42,
         Created: time.Now(),
-    }).Run()
+    })
+
+    if err != nil {
+        panic(err)
+    }
+
+    err = op.Run()
+
     if err != nil {
         panic(err)
     }
@@ -101,7 +108,7 @@ Read, Set, Update, and Delete all happen by "Id".
 ```
 [link to this example](https://github.com/hailocab/gocassa/blob/master/examples/multimap_table1/multimap_table1.go)
 
-For examples on how to do pagination or Update with this table, refer to the example (linked under code snippet). 
+For examples on how to do pagination or Update with this table, refer to the example (linked under code snippet).
 
 ##### `TimeSeriesTable`
 
@@ -139,7 +146,7 @@ For examples on how to do pagination or Update with this table, refer to the exa
 
 ###### Too long table names
 
-In case you get the following error: 
+In case you get the following error:
 
 ```
 Column family names shouldn't be more than 48 characters long (got "somelongishtablename_multitimeseries_start_id_24h0m0s")

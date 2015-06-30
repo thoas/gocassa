@@ -35,13 +35,20 @@ func main() {
 	salesTable.Create()
 
 	// We insert the first record into our table - yay!
-	err = salesTable.Set(Sale{
+	op, err := salesTable.Set(Sale{
 		Id:         "sale-1",
 		CustomerId: "customer-1",
 		SellerId:   "seller-1",
 		Price:      42,
 		Created:    time.Now(),
-	}).Run()
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	err = op.Run()
+
 	if err != nil {
 		panic(err)
 	}
@@ -57,13 +64,20 @@ func main() {
 
 	// As an upside, now we can actually list rows based on a criteria. Let's insert an other row
 	// before Listing - it is no fun to have a list with one element only ;)
-	err = salesTable.Set(Sale{
+	op, err = salesTable.Set(Sale{
 		Id:         "sale-2",
 		CustomerId: "customer-1",
 		SellerId:   "seller-1",
 		Price:      55,
 		Created:    time.Now(),
-	}).Run()
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	err = op.Run()
+
 	if err != nil {
 		panic(err)
 	}
@@ -98,13 +112,20 @@ func main() {
 
 	// Insert some data to paginate:
 	for i := 0; i < 50; i++ {
-		err = salesTable.Set(Sale{
+		op, err = salesTable.Set(Sale{
 			Id:         fmt.Sprintf("sale-%v", i),
 			CustomerId: "customer-1",
 			SellerId:   "seller-1",
 			Price:      55,
 			Created:    time.Now(),
-		}).Run()
+		})
+
+		if err != nil {
+			panic(err)
+		}
+
+		err = op.Run()
+
 		if err != nil {
 			panic(err)
 		}

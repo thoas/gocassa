@@ -33,13 +33,20 @@ func main() {
 	salesTable.Create()
 
 	// We insert the first record into our table - yay!
-	err = salesTable.Set(Sale{
+	op, err := salesTable.Set(Sale{
 		Id:         "sale-1",
 		CustomerId: "customer-1",
 		SellerId:   "seller-1",
 		Price:      42,
 		Created:    time.Now(),
-	}).Run()
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	err = op.Run()
+
 	if err != nil {
 		panic(err)
 	}

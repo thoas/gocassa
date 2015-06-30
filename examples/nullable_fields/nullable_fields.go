@@ -35,11 +35,17 @@ func main() {
 	uuid := gocql.TimeUUID()
 
 	// We insert the first record into our table - yay!
-	err = salesTable.Set(Sale{
+	op, err := salesTable.Set(Sale{
 		Id:      uuid,
 		Price:   42,
 		Created: time.Now(),
-	}).Run()
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	err = op.Run()
 
 	if err != nil {
 		panic(err)
