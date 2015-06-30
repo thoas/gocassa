@@ -29,10 +29,17 @@ func StructToMap(val interface{}) (map[string]interface{}, bool) {
 		return nil, false
 	}
 	sinfo := getStructInfo(structVal)
+
 	mapVal := make(map[string]interface{}, len(sinfo.FieldsList))
+
 	for _, field := range sinfo.FieldsList {
 		mapVal[field.Key] = structVal.Field(field.Num).Interface()
 	}
+
+	for _, field := range sinfo.FieldsNullable {
+		mapVal[field] = nil
+	}
+
 	return mapVal, true
 }
 
@@ -85,7 +92,8 @@ type structInfo struct {
 	// FieldsMap is used to access fields by their key
 	FieldsMap map[string]fieldInfo
 	// FieldsList allows iteration over the fields in their struct order.
-	FieldsList []fieldInfo
+	FieldsList     []fieldInfo
+	FieldsNullable []string
 }
 
 func getStructInfo(v r.Value) *structInfo {
@@ -100,6 +108,7 @@ func getStructInfo(v r.Value) *structInfo {
 	n := st.NumField()
 	fieldsMap := make(map[string]fieldInfo, n)
 	fieldsList := make([]fieldInfo, 0, n)
+	fieldsNullable := make([]string, 0, n)
 	for i := 0; i != n; i++ {
 		field := st.Field(i)
 		info := fieldInfo{Num: i}
@@ -109,10 +118,17 @@ func getStructInfo(v r.Value) *structInfo {
 		if tag == "" && strings.Index(string(field.Tag), ":") < 0 {
 			tag = string(field.Tag)
 		}
+
+		opt := strings.Split(tag, ";")
+
 		if tag != "" {
-			info.Key = tag
+			info.Key = opt[0]
 		} else {
 			info.Key = field.Name
+		}
+
+		if len(opt) > 1 && opt[1] == "null" {
+			fieldsNullable = append(fieldsNullable, info.Key)
 		}
 
 		if _, found = fieldsMap[info.Key]; found {
@@ -126,6 +142,7 @@ func getStructInfo(v r.Value) *structInfo {
 	sinfo = &structInfo{
 		fieldsMap,
 		fieldsList,
+		fieldsNullable,
 	}
 	structMapMutex.Lock()
 	structMap[st] = sinfo
